@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #4b79a1;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .weather-app {
+        background-color: white;
+        padding: 20px 30px;
+        width: 300px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      select {
+        padding: 10px;
+        width: 80%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background: #4b79a1;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #283e51;
+      }
+
+      .result {
+        margin-top: 20px;
+      }
+
+      .result img {
+        width: 50px;
+        height: 50px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="weather-app">
+      <h2>Weather App</h2>
+
+      <select id="countrySelect">
+        <option value="">Select Country</option>
+      </select>
+
+      <button id="getWeatherbtn">Get Weather</button>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      const apiKey = "634d89acf8efd9972558736537050256";
+
+      document
+        .getElementById("getWeatherbtn")
+        .addEventListener("click", async () => {
+          const country = document.getElementById("countrySelect").value;
+          const resultDiv = document.getElementById("result");
+
+          if (!country) {
+            alert("Please select a country");
+            return;
+          }
+
+          resultDiv.innerHTML = "Loading...";
+
+          try {
+            const response = await fetch(
+              `https://api.openweathermap.org/data/2.5/weather?q=${country}&units=metric&appid=${apiKey}`,
+            );
+
+            if (!response.ok) {
+              throw new Error("Country not found or API Error");
+            }
+
+            const data = await response.json();
+
+            let weatherType = data.weather[0].main;
+
+            /* Change background based on weather */
+
+            if (weatherType === "Clouds") {
+              document.body.style.backgroundImage =
+                "url('ankur-verma-vXU_wJ7YmNc-unsplash.jpg')";
+            } else if (weatherType === "Rain" || weatherType === "Drizzle") {
+              document.body.style.backgroundImage =
+                "url('weather-effects-composition.jpg')";
+            } else if (weatherType === "Thunderstorm") {
+              document.body.style.backgroundImage =
+                "url('johannes-plenio-ESL1rIs9j48-unsplash.jpg')";
+            } else if (weatherType === "Haze" || weatherType==="Mist" || weatherType==="Smoke" || weatherType==="Fog" || weatherType==="Dust" || weatherType==="Sand") {
+              document.body.style.backgroundImage =
+                'url("silhouette-bare-trees-sunrise.jpg")';
+            } else if (weatherType === "Snow") {
+              document.body.style.backgroundImage =
+                'url("filip-bunkens-R5SrmZPoO40-unsplash.jpg")';
+            } else if (weatherType === "Clear") {
+              document.body.style.backgroundImage =
+                "url('engin-akyurt-vZko3Le6l_4-unsplash.jpg')";
+            } else {
+              document.body.style.backgroundImage = "none";
+              document.body.style.backgroundColor = "#4b79a1";
+            }
+
+            /* Weather Result */
+
+            resultDiv.innerHTML = `
+            <h3>${data.name}, ${data.sys.country}</h3>
+            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png">
+            <p>Temperature: ${data.main.temp} °C</p>
+            <p>Weather: ${data.weather[0].description}</p>
+            <p>Humidity: ${data.main.humidity}%</p>
+            <p>Wind Speed: ${data.wind.speed} m/s</p>
+            `;
+
+            localStorage.setItem("LastWeather", JSON.stringify(data));
+          } catch (error) {
+            resultDiv.innerHTML = `<p style="color:red;">${error.message}</p>`;
+            console.error(error);
+          }
+        });
+
+      /* Load countries */
+
+      async function loadCountries() {
+        let response = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,capital,flag",
+        );
+        let countries = await response.json();
+
+        let select = document.getElementById("countrySelect");
+
+        /* Sort countries */
+
+        countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+
+        countries.forEach((country) => {
+          if (!country.capital) return;
+
+          let option = document.createElement("option");
+
+          option.value = country.capital[0];
+          option.textContent = country.name.common + " " + country.flag;
+
+          select.appendChild(option);
+        });
+      }
+
+      loadCountries();
+    </script>
+  </body>
+</html>
