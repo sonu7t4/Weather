@@ -148,39 +148,36 @@
 
       /* Load countries */
 async function loadCountries() {
-  try {
-    const response = await fetch(
-      "https://restcountries.com/v4.1/all"
-    );
+    try {
+        const response = await fetch("https://countriesnow.space/api/v0.1/countries/capital");
+        if (!response.ok) throw new Error("Failed to load countries");
 
-    if (!response.ok) {
-      throw new Error("Failed to load countries");
+        const result = await response.json();
+        const countries = result.data;
+
+        const invalidValues = ["", "n/a", "-", "none", "null", "undefined"];
+        const select = document.getElementById("countrySelect");
+
+        countries
+            .filter(c => {
+                const cap = c.capital?.trim().toLowerCase();
+                return cap && !invalidValues.includes(cap);
+            })
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .forEach(country => {
+                const option = document.createElement("option");
+                option.value = country.capital.trim();
+                option.textContent = country.name;
+                select.appendChild(option);
+            });
+
+    } catch (error) {
+        console.error("Country loading error:", error);
+        document.getElementById("countrySelect").innerHTML =
+            '<option value="">Failed to load countries</option>';
     }
-
-    const countries = await response.json();
-
-    const select = document.getElementById("countrySelect");
-
-    countries
-      .filter(country => country.capital && country.capital.length)
-      .sort((a, b) =>
-        a.name.common.localeCompare(b.name.common)
-      )
-      .forEach(country => {
-        const option = document.createElement("option");
-
-        option.value = country.capital[0];
-        option.textContent =
-          `${country.name.common} ${country.flag || ""}`;
-
-        select.appendChild(option);
-      });
-
-  } catch (error) {
-    console.error("Country loading error:", error);
-  }
 }
-      loadCountries();
+loadCountries();
     </script>
   </body>
 </html>
