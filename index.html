@@ -147,31 +147,39 @@
         });
 
       /* Load countries */
+async function loadCountries() {
+  try {
+    const response = await fetch(
+      "https://restcountries.com/v3.1/all"
+    );
 
-      async function loadCountries() {
-        let response = await fetch(
-          "https://restcountries.com/v3.1/all",
-        );
-        let countries = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to load countries");
+    }
 
-        let select = document.getElementById("countrySelect");
+    const countries = await response.json();
 
-        /* Sort countries */
+    const select = document.getElementById("countrySelect");
 
-        countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+    countries
+      .filter(country => country.capital && country.capital.length)
+      .sort((a, b) =>
+        a.name.common.localeCompare(b.name.common)
+      )
+      .forEach(country => {
+        const option = document.createElement("option");
 
-        countries.forEach((country) => {
-          if (!country.capital) return;
+        option.value = country.capital[0];
+        option.textContent =
+          `${country.name.common} ${country.flag || ""}`;
 
-          let option = document.createElement("option");
+        select.appendChild(option);
+      });
 
-          option.value = country.capital[0];
-          option.textContent = country.name.common + " " + country.flag;
-
-          select.appendChild(option);
-        });
-      }
-
+  } catch (error) {
+    console.error("Country loading error:", error);
+  }
+}
       loadCountries();
     </script>
   </body>
